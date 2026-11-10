@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chá de Bebê do Rayan</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React e ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+</head>
+<body class="bg-[#f9f6f0]">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+       // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyBLHYeMcOtQ1jAJ7eXv6Z9UVp-v2L_GIwY",
+  authDomain: "cha-do-rayan.firebaseapp.com",
+  projectId: "cha-do-rayan",
+  storageBucket: "cha-do-rayan.firebasestorage.app",
+  messagingSenderId: "134063677735",
+  appId: "1:134063677735:web:b4f44488f3b9ae729d0902",
+  measurementId: "G-KF5ZJVYGY8"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+        const firebaseConfig = {
+            apiKey: "SUA_API_KEY",
+            authDomain: "SEU_DOMINIO.firebaseapp.com",
+            projectId: "SEU_PROJECT_ID",
+            storageBucket: "SEU_BUCKET.appspot.com",
+            messagingSenderId: "SEU_SENDER_ID",
+            appId: "SEU_APP_ID"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // Ícones SVG
+        const Calendar = () => <svg className="w-5 h-5 text-[#4a6485]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>;
+        const Clock = () => <svg className="w-5 h-5 text-[#4a6485]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
+        const MapPin = () => <svg className="w-5 h-5 text-[#4a6485] shrink-0 mt-0.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>;
+        const Check = () => <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>;
+        const X = () => <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>;
+        const Heart = () => <svg className="w-8 h-8 text-[#1d3557]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>;
+        const Lock = () => <svg className="w-8 h-8 text-[#4a6485]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>;
+        const Trash2 = () => <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>;
+
+        function App() {
+            const [user, setUser] = useState(null);
+            const [rsvps, setRsvps] = useState([]);
+            const [activeTab, setActiveTab] = useState('form');
+            
+            const [isAuthenticatedParent, setIsAuthenticatedParent] = useState(false);
+            const [passwordInput, setPasswordInput] = useState('');
+            const [passwordError, setPasswordError] = useState(false);
+
+            const [name, setName] = useState('');
+            const [attending, setAttending] = useState('yes');
+            const [hasCompanion, setHasCompanion] = useState('no');
+            const [companionName, setCompanionName] = useState('');
+            const [isSubmitting, setIsSubmitting] = useState(false);
+            const [submitSuccess, setSubmitSuccess] = useState(false);
+            
+            const [deletingId, setDeletingId] = useState(null);
+
+            useEffect(() => {
+                auth.signInAnonymously().catch(console.error);
+                const unsubscribe = auth.onAuthStateChanged(setUser);
+                return () => unsubscribe();
+            }, []);
+
+            useEffect(() => {
+                if (!user) return;
+                const unsubscribe = db.collection('convidados')
+                    .orderBy('timestamp', 'desc')
+                    .onSnapshot((snapshot) => {
+                        const fetchedData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        setRsvps(fetchedData);
+                    }, console.error);
+                return () => unsubscribe();
+            }, [user]);
+
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                if (!user || !name.trim()) return;
+                setIsSubmitting(true);
+                try {
+                    await db.collection('convidados').add({
+                        name: name.trim(),
+                        attending: attending === 'yes',
+                        hasCompanion: hasCompanion === 'yes',
+                        companionName: hasCompanion === 'yes' ? companionName.trim() : '',
+                        timestamp: new Date().toISOString()
+                    });
+                    setSubmitSuccess(true);
+                    setName(''); setAttending('yes'); setHasCompanion('no'); setCompanionName('');
+                    setTimeout(() => setSubmitSuccess(false), 5000);
+                } catch (error) {
+                    console.error("Erro ao enviar:", error);
+                } finally {
+                    setIsSubmitting(false);
+                }
+            };
+
+            const confirmDelete = async (id) => {
+                try {
+                    await db.collection('convidados').doc(id).delete();
+                    setDeletingId(null);
+                } catch (error) {
+                    console.error("Erro ao deletar:", error);
+                }
+            };
+
+            const fontStyles = `
+                @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Lora:ital,wght@0,400;0,500;1,400&display=swap');
+                .font-cursive { font-family: 'Great Vibes', cursive; }
+                .font-serif-custom { font-family: 'Lora', serif; }
+                .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+                .custom-scrollbar::-webkit-scrollbar-track { background: #f3f0e8; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: #c5d8eb; border-radius: 10px; }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #8a9db3; }
+            `;
+
+            return (
+                <div className="min-h-screen text-[#1d3557] font-serif-custom flex flex-col items-center py-10 px-4">
+                    <style>{fontStyles}</style>
+                    <div className="max-w-md w-full bg-white rounded-3xl shadow-xl overflow-hidden border border-[#e0dcd3]">
+                        
+                        {/* Header */}
+                        <div className="pt-12 pb-8 px-8 text-center border-b border-[#e0dcd3] bg-gradient-to-b from-[#f3f0e8] to-white relative">
+                            <div className="absolute top-0 left-0 w-16 h-16 bg-[#1d3557] opacity-10 rounded-br-full"></div>
+                            <div className="absolute top-0 right-0 w-16 h-16 bg-[#1d3557] opacity-10 rounded-bl-full"></div>
+                            
+                            <h2 className="text-sm tracking-[0.2em] uppercase text-[#4a6485] mb-2 font-medium">Chá de Bebê do</h2>
+                            <h1 className="font-cursive text-7xl text-[#1d3557] mb-6 drop-shadow-sm">Rayan</h1>
+                            <p className="text-sm text-[#4a6485] italic mb-8 px-4">Estamos muito felizes em compartilhar esse momento tão especial com você!</p>
+
+                            <div className="space-y-4 text-left text-sm text-[#2d4a70] max-w-[280px] mx-auto">
+                                <div className="flex items-center gap-4"><Calendar /><span>17 de Janeiro</span></div>
+                                <div className="flex items-center gap-4"><Clock /><span>Das 16h às 21h</span></div>
+                                <div className="flex items-start gap-4"><MapPin /><span>Rua Renata Câmara, 93<br/>Salão de Festa<br/>Saboó - Santos</span></div>
+                            </div>
+                        </div>
+
+                        {/* Tabs */}
+                        <div className="flex border-b border-[#e0dcd3]">
+                            <button onClick={() => setActiveTab('form')} className={`flex-1 py-4 text-sm font-medium transition-colors ${activeTab === 'form' ? 'bg-white text-[#1d3557] border-b-2 border-[#1d3557]' : 'bg-[#fbfaf8] text-[#8a9db3]'}`}>Confirmar Presença</button>
+                            <button onClick={() => setActiveTab('list')} className={`flex-1 py-4 text-sm font-medium transition-colors ${activeTab === 'list' ? 'bg-white text-[#1d3557] border-b-2 border-[#1d3557]' : 'bg-[#fbfaf8] text-[#8a9db3]'}`}>Lista de Convidados</button>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-8">
+                            {activeTab === 'form' && (
+                                <div>
+                                    {submitSuccess ? (
+                                        <div className="text-center py-8">
+                                            <div className="w-16 h-16 bg-[#e8f0f8] rounded-full flex items-center justify-center mx-auto mb-4"><Heart /></div>
+                                            <h3 className="text-xl font-medium text-[#1d3557] mb-2">Muito obrigado!</h3>
+                                            <p className="text-[#4a6485]">Sua resposta foi registrada com sucesso.</p>
+                                            <button onClick={() => setSubmitSuccess(false)} className="mt-6 text-sm text-[#4a6485] underline">Enviar outra resposta</button>
+                                        </div>
+                                    ) : (
+                                        <form onSubmit={handleSubmit} className="space-y-6">
+                                            <div>
+                                                <label className="block text-sm font-medium text-[#1d3557] mb-2">Nome completo</label>
+                                                <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-[#d5d0c4] bg-[#fbfaf8] focus:outline-none focus:ring-2 focus:ring-[#1d3557]" placeholder="Ex: Maria Silva" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-[#1d3557] mb-3">Você poderá comparecer?</label>
+                                                <div className="flex gap-4">
+                                                    <label className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border cursor-pointer ${attending === 'yes' ? 'bg-[#1d3557] text-white' : 'bg-white text-[#4a6485]'}`}>
+                                                        <input type="radio" name="attending" checked={attending === 'yes'} onChange={() => setAttending('yes')} className="hidden" /><Check /> Sim
+                                                    </label>
+                                                    <label className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border cursor-pointer ${attending === 'no' ? 'bg-[#1d3557] text-white' : 'bg-white text-[#4a6485]'}`}>
+                                                        <input type="radio" name="attending" checked={attending === 'no'} onChange={() => setAttending('no')} className="hidden" /><X /> Não
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            {attending === 'yes' && (
+                                                <div>
+                                                    <label className="block text-sm font-medium text-[#1d3557] mb-3 mt-4">Levará acompanhante?</label>
+                                                    <div className="flex gap-4 mb-4">
+                                                        <label className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border cursor-pointer ${hasCompanion === 'yes' ? 'bg-[#e8f0f8] text-[#1d3557]' : 'bg-white text-[#4a6485]'}`}>
+                                                            <input type="radio" name="companion" checked={hasCompanion === 'yes'} onChange={() => setHasCompanion('yes')} className="hidden" />Sim
+                                                        </label>
+                                                        <label className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border cursor-pointer ${hasCompanion === 'no' ? 'bg-[#e8f0f8] text-[#1d3557]' : 'bg-white text-[#4a6485]'}`}>
+                                                            <input type="radio" name="companion" checked={hasCompanion === 'no'} onChange={() => setHasCompanion('no')} className="hidden" />Não
+                                                        </label>
+                                                    </div>
+                                                    {hasCompanion === 'yes' && (
+                                                        <div>
+                                                            <label className="block text-sm font-medium text-[#1d3557] mb-2">Nome do(s) acompanhante(s)</label>
+                                                            <input type="text" required value={companionName} onChange={(e) => setCompanionName(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-[#d5d0c4] bg-[#fbfaf8] focus:outline-none focus:ring-2 focus:ring-[#1d3557]" placeholder="Ex: João Silva" />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                            <button type="submit" disabled={isSubmitting || !user} className="w-full mt-4 bg-[#1d3557] text-white py-4 rounded-xl font-medium">
+                                                {isSubmitting ? 'Enviando...' : 'Confirmar'}
+                                            </button>
+                                        </form>
+                                    )}
+                                </div>
+                            )}
+
+                            {activeTab === 'list' && (
+                                <div>
+                                    {!isAuthenticatedParent ? (
+                                        <div className="text-center py-12">
+                                            <div className="w-16 h-16 bg-[#f3f0e8] rounded-full flex items-center justify-center mx-auto mb-4"><Lock /></div>
+                                            <h3 className="text-lg font-medium text-[#1d3557] mb-2">Acesso Restrito</h3>
+                                            <p className="text-sm text-[#4a6485] mb-6">Digite a senha para ver a lista.</p>
+                                            <form onSubmit={(e) => { e.preventDefault(); if (passwordInput === '1234') { setIsAuthenticatedParent(true); setPasswordError(false); } else setPasswordError(true); }} className="flex flex-col gap-3 max-w-xs mx-auto">
+                                                <div className="flex gap-2">
+                                                    <input type="password" value={passwordInput} onChange={(e) => {setPasswordInput(e.target.value); setPasswordError(false)}} placeholder="Senha" className={`flex-1 px-4 py-2 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#1d3557] bg-[#fbfaf8] ${passwordError ? 'border-red-400' : 'border-[#d5d0c4]'}`} />
+                                                    <button type="submit" className="bg-[#1d3557] text-white px-5 py-2 rounded-xl">Entrar</button>
+                                                </div>
+                                                {passwordError && <span className="text-red-500 text-xs">Senha incorreta.</span>}
+                                            </form>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div className="grid grid-cols-2 gap-4 mb-6">
+                                                <div className="bg-[#e8f0f8] p-4 rounded-2xl border border-[#c5d8eb] text-center">
+                                                    <span className="text-3xl font-medium text-[#1d3557] block">{rsvps.filter(r => r.attending).reduce((a, c) => a + (c.hasCompanion ? 2 : 1), 0)}</span>
+                                                    <span className="text-xs text-[#4a6485] uppercase font-medium">Confirmados</span>
+                                                </div>
+                                                <div className="bg-[#fbfaf8] p-4 rounded-2xl border border-[#d5d0c4] text-center">
+                                                    <span className="text-3xl font-medium text-[#4a6485] block">{rsvps.filter(r => !r.attending).length}</span>
+                                                    <span className="text-xs text-[#8a9db3] uppercase font-medium">Não irão</span>
+                                                </div>
+                                            </div>
+                                            <div className="border border-[#e0dcd3] rounded-xl overflow-hidden">
+                                                <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
+                                                    {rsvps.length === 0 ? (
+                                                        <div className="p-8 text-center text-[#8a9db3] text-sm">Nenhuma resposta ainda.</div>
+                                                    ) : (
+                                                        <table className="w-full text-sm text-left">
+                                                            <thead className="bg-[#f3f0e8] text-[#4a6485] sticky top-0">
+                                                                <tr><th className="px-4 py-3">Nome</th><th className="px-4 py-3 text-center">Status</th><th className="px-4 py-3"></th></tr>
+                                                            </thead>
+                                                            <tbody className="divide-y divide-[#e0dcd3]">
+                                                                {rsvps.map((rsvp) => (
+                                                                    <tr key={rsvp.id} className="bg-white">
+                                                                        <td className="px-4 py-3">
+                                                                            <div className="font-medium text-[#1d3557]">{rsvp.name}</div>
+                                                                            {rsvp.hasCompanion && rsvp.companionName && <div className="text-xs text-[#8a9db3] mt-0.5">+ {rsvp.companionName}</div>}
+                                                                        </td>
+                                                                        <td className="px-4 py-3 text-center">
+                                                                            {rsvp.attending ? <span className="inline-flex w-6 h-6 rounded-full bg-[#e8f0f8] text-[#1d3557] items-center justify-center"><Check /></span> : <span className="inline-flex w-6 h-6 rounded-full bg-red-50 text-red-400 items-center justify-center"><X /></span>}
+                                                                        </td>
+                                                                        <td className="px-4 py-3 text-right">
+                                                                            {deletingId === rsvp.id ? (
+                                                                                <div className="flex gap-2 justify-end">
+                                                                                    <button onClick={() => confirmDelete(rsvp.id)} className="text-red-500 px-2 py-1 bg-red-50 rounded">Excluir</button>
+                                                                                    <button onClick={() => setDeletingId(null)} className="text-[#8a9db3] px-2 py-1 bg-[#f3f0e8] rounded">Cancelar</button>
+                                                                                </div>
+                                                                            ) : (
+                                                                                <button onClick={() => setDeletingId(rsvp.id)} className="text-[#8a9db3] p-1"><Trash2 /></button>
+                                                                            )}
+                                                                        </td>
+                                                                    </tr>
+                                                                ))}
+                                                            </tbody>
+                                                        </table>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                        <div className="bg-[#1d3557] py-4 text-center"><p className="text-[#a5b9ce] text-xs">Sua presença já é um grande presente! ♡</p></div>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
