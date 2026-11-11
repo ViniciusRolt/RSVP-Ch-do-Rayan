@@ -12,10 +12,10 @@
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     
-    <!-- Babel -->
+    <!-- Babel (Para rodar React no navegador) -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- Firebase -->
+    <!-- Firebase (Versão Compatível) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
 </head>
@@ -26,7 +26,7 @@
         const { useState, useEffect } = React;
 
         // ==========================================
-        // CHAVES DO FIREBASE DO VINICIUS
+        // CHAVES DO FIREBASE DO VINICIUS (Corretas)
         // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyBLHYeMcOtQ1jAJ7eXv6Z9UVp-v2L_GIwY",
@@ -37,6 +37,7 @@
             appId: "1:134063677735:web:b4f44488f3b9ae729d0902"
         };
 
+        // Inicializar Firebase apenas uma vez
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
@@ -69,39 +70,43 @@
             
             const [deletingId, setDeletingId] = useState(null);
 
+            // Carregar dados
             useEffect(() => {
                 const unsubscribe = db.collection('convidados')
                     .orderBy('timestamp', 'desc')
                     .onSnapshot((snapshot) => {
                         const fetchedData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                         setRsvps(fetchedData);
-                    }, (err) => console.log("Aguardando conexao com BD..."));
+                    }, (error) => {
+                        console.error("Erro ao ler do Firebase:", error);
+                    });
                 return () => unsubscribe();
             }, []);
 
-            const handleSubmit = (e) => {
+            // Enviar formulário
+            const handleSubmit = async (e) => {
                 e.preventDefault();
                 if (!name.trim()) return;
                 setIsSubmitting(true);
 
-                db.collection('convidados').add({
-                    name: name.trim(),
-                    attending: attending === 'yes',
-                    hasCompanion: hasCompanion === 'yes',
-                    companionName: hasCompanion === 'yes' ? companionName.trim() : '',
-                    timestamp: new Date().toISOString()
-                }).then(() => {
+                try {
+                    await db.collection('convidados').add({
+                        name: name.trim(),
+                        attending: attending === 'yes',
+                        hasCompanion: hasCompanion === 'yes',
+                        companionName: hasCompanion === 'yes' ? companionName.trim() : '',
+                        timestamp: new Date().toISOString()
+                    });
+                    
+                    // Se deu certo, mostra a tela de sucesso
                     setSubmitSuccess(true);
-                    setName(''); 
-                    setAttending('yes'); 
-                    setHasCompanion('no'); 
-                    setCompanionName('');
-                }).catch((error) => {
+                    setName(''); setAttending('yes'); setHasCompanion('no'); setCompanionName('');
+                } catch (error) {
                     console.error("Erro ao enviar:", error);
-                    alert("Ocorreu um erro ao enviar. Tente novamente.");
-                }).finally(() => {
-                    setIsSubmitting(false);
-                });
+                    alert("⚠️ O Firebase bloqueou o envio! Vá no painel do Firebase > Firestore Database > Regras (Rules) e garanta que está no modo de teste (allow read, write: if true;).");
+                } finally {
+                    setIsSubmitting(false); // Libera o botão independente de erro ou sucesso
+                }
             };
 
             const confirmDelete = async (id) => {
@@ -110,6 +115,7 @@
                     setDeletingId(null);
                 } catch (error) {
                     console.error("Erro ao deletar:", error);
+                    alert("Erro ao excluir. Verifique as regras do Firestore.");
                 }
             };
 
@@ -144,7 +150,7 @@
                         {/* Tabs */}
                         <div className="flex border-b border-[#e0dcd3]">
                             <button onClick={() => setActiveTab('form')} className={`flex-1 py-4 text-sm font-medium transition-colors ${activeTab === 'form' ? 'bg-white text-[#1d3557] border-b-2 border-[#1d3557]' : 'bg-[#fbfaf8] text-[#8a9db3]'}`}>Confirmar Presença</button>
-                            <button onClick={() => setActiveTab('list')} className={`flex-1 py-4 text-sm font-medium transition-colors ${activeTab === 'list' ? 'bg-[#fbfaf8] text-[#8a9db3]' : 'bg-white text-[#1d3557] border-b-2 border-[#1d3557]'}`}>Lista de Convidados</button>
+                            <button onClick={() => setActiveTab('list')} className={`flex-1 py-4 text-sm font-medium transition-colors ${activeTab === 'list' ? 'bg-white text-[#1d3557] border-b-2 border-[#1d3557]' : 'bg-[#fbfaf8] text-[#8a9db3]'}`}>Lista de Convidados</button>
                         </div>
 
                         {/* Content */}
