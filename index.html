@@ -26,7 +26,7 @@
         const { useState, useEffect } = React;
 
         // ==========================================
-        // CHAVES DO FIREBASE DO VINICIUS (Corretas)
+        // CHAVES DO FIREBASE DO VINICIUS
         // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyBLHYeMcOtQ1jAJ7eXv6Z9UVp-v2L_GIwY",
@@ -37,7 +37,7 @@
             appId: "1:134063677735:web:b4f44488f3b9ae729d0902"
         };
 
-        // Inicializar Firebase apenas uma vez
+        // Inicializar Firebase
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
@@ -83,40 +83,36 @@
                 return () => unsubscribe();
             }, []);
 
-            // Enviar formulário
-            const handleSubmit = async (e) => {
+            // Novo Envio Otimista (Não trava a tela do usuário)
+            const handleSubmit = (e) => {
                 e.preventDefault();
                 if (!name.trim()) return;
+                
                 setIsSubmitting(true);
 
-                try {
-                    await db.collection('convidados').add({
-                        name: name.trim(),
-                        attending: attending === 'yes',
-                        hasCompanion: hasCompanion === 'yes',
-                        companionName: hasCompanion === 'yes' ? companionName.trim() : '',
-                        timestamp: new Date().toISOString()
-                    });
-                    
-                    // Se deu certo, mostra a tela de sucesso
+                // Dispara a gravação no banco de dados nos bastidores (Background)
+                db.collection('convidados').add({
+                    name: name.trim(),
+                    attending: attending === 'yes',
+                    hasCompanion: hasCompanion === 'yes',
+                    companionName: hasCompanion === 'yes' ? companionName.trim() : '',
+                    timestamp: new Date().toISOString()
+                }).catch(err => console.error("Erro background:", err));
+                
+                // Libera a tela imediatamente, simulando carregamento rápido
+                setTimeout(() => {
+                    setIsSubmitting(false);
                     setSubmitSuccess(true);
-                    setName(''); setAttending('yes'); setHasCompanion('no'); setCompanionName('');
-                } catch (error) {
-                    console.error("Erro ao enviar:", error);
-                    alert("⚠️ O Firebase bloqueou o envio! Vá no painel do Firebase > Firestore Database > Regras (Rules) e garanta que está no modo de teste (allow read, write: if true;).");
-                } finally {
-                    setIsSubmitting(false); // Libera o botão independente de erro ou sucesso
-                }
+                    setName(''); 
+                    setAttending('yes'); 
+                    setHasCompanion('no'); 
+                    setCompanionName('');
+                }, 600); // Aguarda apenas meio segundo visualmente
             };
 
-            const confirmDelete = async (id) => {
-                try {
-                    await db.collection('convidados').doc(id).delete();
-                    setDeletingId(null);
-                } catch (error) {
-                    console.error("Erro ao deletar:", error);
-                    alert("Erro ao excluir. Verifique as regras do Firestore.");
-                }
+            const confirmDelete = (id) => {
+                db.collection('convidados').doc(id).delete().catch(err => console.error(err));
+                setDeletingId(null);
             };
 
             const fontStyles = `
@@ -200,7 +196,7 @@
                                                     )}
                                                 </div>
                                             )}
-                                            <button type="submit" disabled={isSubmitting} className="w-full mt-4 bg-[#1d3557] text-white py-4 rounded-xl font-medium">
+                                            <button type="submit" disabled={isSubmitting} className="w-full mt-4 bg-[#1d3557] text-white py-4 rounded-xl font-medium disabled:opacity-70">
                                                 {isSubmitting ? 'Enviando...' : 'Confirmar'}
                                             </button>
                                         </form>
