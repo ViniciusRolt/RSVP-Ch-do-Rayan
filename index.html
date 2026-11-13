@@ -67,6 +67,7 @@
             const [companionName, setCompanionName] = useState('');
             const [isSubmitting, setIsSubmitting] = useState(false);
             const [submitSuccess, setSubmitSuccess] = useState(false);
+            const [submitError, setSubmitError] = useState(false);
             
             const [deletingId, setDeletingId] = useState(null);
 
@@ -83,12 +84,14 @@
                 return () => unsubscribe();
             }, []);
 
-            // Envio: libera a tela na hora, sem depender de timer nem da resposta do Firebase
-            const handleSubmit = (e) => {
+            // Envio: só mostra sucesso quando o banco confirma; se falhar ou demorar, avisa o convidado
+            const handleSubmit = async (e) => {
                 e.preventDefault();
-                if (!name.trim()) return;
+                if (!name.trim() || isSubmitting) return;
 
-                // Captura os dados antes de limpar o formulário
+                setIsSubmitting(true);
+                setSubmitError(false);
+
                 const dados = {
                     name: name.trim(),
                     attending: attending === 'yes',
@@ -97,21 +100,23 @@
                     timestamp: new Date().toISOString()
                 };
 
-                // Mostra o sucesso imediatamente
-                setSubmitSuccess(true);
-                setIsSubmitting(false);
-
-                // Limpa o formulário
-                setName('');
-                setAttending('yes');
-                setHasCompanion('no');
-                setCompanionName('');
-
-                // Grava no banco em segundo plano
                 try {
-                    db.collection('convidados').add(dados).catch(err => console.error("Erro ao salvar:", err));
+                    // Espera a confirmação do banco, com limite de 10 segundos
+                    await Promise.race([
+                        db.collection('convidados').add(dados),
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 10000))
+                    ]);
+
+                    setSubmitSuccess(true);
+                    setName('');
+                    setAttending('yes');
+                    setHasCompanion('no');
+                    setCompanionName('');
                 } catch (err) {
                     console.error("Erro ao salvar:", err);
+                    setSubmitError(true);
+                } finally {
+                    setIsSubmitting(false);
                 }
             };
 
@@ -199,6 +204,11 @@
                                                             <input type="text" required value={companionName} onChange={(e) => setCompanionName(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-[#d5d0c4] bg-[#fbfaf8]" placeholder="Ex: João Silva" />
                                                         </div>
                                                     )}
+                                                </div>
+                                            )}
+                                            {submitError && (
+                                                <div className="text-red-500 text-sm text-center bg-red-50 border border-red-200 rounded-xl p-3">
+                                                    Não foi possível registrar sua resposta. Verifique sua conexão e tente novamente.
                                                 </div>
                                             )}
                                             <button type="submit" disabled={isSubmitting} className="w-full mt-4 bg-[#1d3557] text-white py-4 rounded-xl font-medium disabled:opacity-70">
