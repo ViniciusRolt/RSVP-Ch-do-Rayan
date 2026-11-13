@@ -83,31 +83,36 @@
                 return () => unsubscribe();
             }, []);
 
-            // Novo Envio Otimista (Não trava a tela do usuário)
+            // Envio: libera a tela na hora, sem depender de timer nem da resposta do Firebase
             const handleSubmit = (e) => {
                 e.preventDefault();
                 if (!name.trim()) return;
-                
-                setIsSubmitting(true);
 
-                // Dispara a gravação no banco de dados nos bastidores (Background)
-                db.collection('convidados').add({
+                // Captura os dados antes de limpar o formulário
+                const dados = {
                     name: name.trim(),
                     attending: attending === 'yes',
                     hasCompanion: hasCompanion === 'yes',
                     companionName: hasCompanion === 'yes' ? companionName.trim() : '',
                     timestamp: new Date().toISOString()
-                }).catch(err => console.error("Erro background:", err));
-                
-                // Libera a tela imediatamente, simulando carregamento rápido
-                setTimeout(() => {
-                    setIsSubmitting(false);
-                    setSubmitSuccess(true);
-                    setName(''); 
-                    setAttending('yes'); 
-                    setHasCompanion('no'); 
-                    setCompanionName('');
-                }, 600); // Aguarda apenas meio segundo visualmente
+                };
+
+                // Mostra o sucesso imediatamente
+                setSubmitSuccess(true);
+                setIsSubmitting(false);
+
+                // Limpa o formulário
+                setName('');
+                setAttending('yes');
+                setHasCompanion('no');
+                setCompanionName('');
+
+                // Grava no banco em segundo plano
+                try {
+                    db.collection('convidados').add(dados).catch(err => console.error("Erro ao salvar:", err));
+                } catch (err) {
+                    console.error("Erro ao salvar:", err);
+                }
             };
 
             const confirmDelete = (id) => {
